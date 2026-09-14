@@ -168,6 +168,53 @@
     .about-stats { flex-direction:column; align-items:flex-start; gap: 24px; }
     .stat-divider { display:none; }
     .services-header { flex-direction:column; align-items:flex-start; }
+  
+portrait-section {
+  padding: 60px 0 100px;
+}
+
+.portrait-frame {
+  max-width: 640px;
+  margin: 0 auto;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(251,69,4,0.08);
+  background: linear-gradient(140deg, #1a1a1a, #0a0a0a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 5;
+}
+
+.portrait-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.portrait-frame .placeholder-icon {
+  font-size: 4rem;
+  color: var(--text-dimmer);
+}
+
+.portrait-caption {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  margin-top: 28px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 600px) {
+  .portrait-frame { max-width: 90%; }
+}  
+  
+  
+  
   }
 </style>
 </head>
@@ -219,6 +266,17 @@
   </div>
 </section>
 
+<section class="portrait-section">
+  <div class="container">
+    <div class="portrait-frame reveal">
+      <img src="portrait-hd.jpg" alt="Chinmaya - Product Designer" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'placeholder-icon\'>👤</span>'">
+    </div>
+    <p class="portrait-caption reveal">Designing systems that work — <span class="italic">reliably, every time.</span></p>
+  </div>
+</section>
+
+
+ 
 <section class="section" id="about">
   <div class="container">
     <div class="tag reveal">About Me</div>
