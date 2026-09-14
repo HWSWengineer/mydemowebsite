@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chinmaya — Product Designer | Hardware & Systems Engineer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #010101;
+    --surface: #0d0d0d;
+    --border: rgba(255,255,255,0.08);
+    --accent: #fb4504;
+    --text: rgba(255,255,255,0.9);
+    --text-dim: #c2c2c2;
+    --text-dimmer: rgba(255,255,255,0.5);
+  }
+
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; cursor: none; }
+  @media (max-width: 900px) { body { cursor: auto; } }
+  h1,h2,h3,h4 { font-weight: 400; }
+  a { text-decoration: none; color: inherit; }
+  ul { list-style: none; }
+  .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+  .italic { font-family: 'DM Serif Display', serif; font-style: italic; font-weight: 400; color: var(--text); }
+  .tag { display: inline-flex; align-items: center; gap: 8px; color: var(--accent); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.02em; }
+  .tag::before { content: '✦'; font-size: 0.7rem; }
+
+  .cursor-dot, .cursor-ring { position: fixed; top:0; left:0; pointer-events:none; z-index:9999; border-radius:50%; transform: translate(-50%,-50%); }
+  .cursor-dot { width:7px; height:7px; background: var(--accent); }
+  .cursor-ring { width:32px; height:32px; border:1.5px solid var(--accent); transition: width .2s, height .2s, background .2s, border-color .2s; }
+  .cursor-ring.hovered { width:54px; height:54px; background: rgba(251,69,4,0.15); border-color: transparent; }
+  @media (max-width:900px){ .cursor-dot,.cursor-ring{display:none;} }
+
+  #preloader { position:fixed; inset:0; background:var(--bg); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  #preloader .pl-logo { font-size:1.7rem; letter-spacing:1px; opacity:0; font-family:'DM Serif Display', serif; font-style:italic; }
+  #preloader .pl-logo span { color: var(--accent); font-style: normal; font-family:'Inter',sans-serif; }
+  #preloader .pl-bar { width:180px; height:2px; background:rgba(255,255,255,0.15); margin-top:22px; overflow:hidden; }
+  #preloader .pl-fill { height:100%; width:0%; background: var(--accent); }
+
+  header { position:fixed; top:0; left:0; right:0; z-index:200; padding:26px 0; transition: all .4s; }
+  header nav { display:flex; justify-content:space-between; align-items:center; max-width:1140px; margin:0 auto; padding:0 24px; }
+  .logo { font-size:1.3rem; font-family:'DM Serif Display', serif; font-style:italic; }
+  .logo span { color: var(--accent); font-style:normal; font-family:'Inter',sans-serif; font-weight:600; }
+  .nav-links { display:flex; gap:34px; align-items:center; }
+  .nav-links a { font-size:.92rem; font-weight:500; position:relative; }
+  .nav-links a:not(.nav-cta)::after { content:''; position:absolute; left:0; bottom:-6px; width:0; height:1px; background:var(--accent); transition:width .3s; }
+  .nav-links a:not(.nav-cta):hover::after { width:100%; }
+  .nav-cta { background:var(--accent); padding:11px 24px; border-radius:30px; font-weight:600; font-size:.88rem; }
+  .menu-toggle { display:none; font-size:1.5rem; background:none; border:none; color:var(--text); cursor:pointer; }
+  header.scrolled { background: rgba(1,1,1,0.85); backdrop-filter: blur(14px); padding: 16px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+
+  .hero { position:relative; min-height:100vh; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  #hero-canvas { position:absolute; inset:0; z-index:1; width:100%; height:100%; }
+
+  .hero-inner {
+    position: relative; z-index: 5; max-width: 1140px; width: 100%; padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 50px; flex-wrap: wrap;
+  }
+  .hero-text-side { flex: 1; min-width: 320px; text-align: left; }
+  .hero-text-side .tag { justify-content: flex-start; margin-bottom: 24px; opacity: 0; }
+  .hero-text-side h1 { font-size: 3rem; line-height: 1.25; margin-bottom: 20px; font-weight: 300; }
+  .hero-text-side h1 .line { display: block; overflow: hidden; }
+  .hero-text-side h1 .line span { display: inline-block; transform: translateY(110%); }
+  .hero-text-side p { color: var(--text-dim); font-size: 1.05rem; margin-bottom: 34px; opacity: 0; max-width: 440px; }
+  .hero-text-side .btn-group { display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-start; opacity: 0; }
+  .btn-primary, .btn-secondary { padding:14px 30px; border-radius:30px; font-weight:600; font-size:.92rem; cursor:pointer; border:none; font-family:inherit; }
+  .btn-primary { background:var(--accent); color:white; }
+  .btn-secondary { border:1px solid rgba(255,255,255,0.25); background:transparent; color:var(--text); }
+
+  .hero-photo-side { flex: 0 0 auto; display: flex; justify-content: center; opacity: 0; transform: scale(0.9); }
+  .hero-photo-frame {
+    width: 280px; height: 340px; border-radius: 20px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 30px 60px rgba(251,69,4,0.2), 0 0 0 1px rgba(251,69,4,0.1);
+    position: relative; background: linear-gradient(140deg, #1a1a1a, #0a0a0a);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hero-photo-frame::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(1,1,1,0.4)); pointer-events: none;
+  }
+  .hero-photo-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero-photo-frame .placeholder-icon { font-size: 3rem; color: var(--text-dimmer); }
+
+  @media (max-width: 900px) {
+    .hero-inner { flex-direction: column-reverse; text-align: center; }
+    .hero-text-side { text-align: center; }
+    .hero-text-side .tag, .hero-text-side .btn-group { justify-content: center; }
+    .hero-text-side p { margin-left: auto; margin-right: auto; }
+    .hero-photo-frame { width: 220px; height: 270px; }
+  }
+
+  .section { padding:120px 0; }
+  .section-title { margin-bottom:60px; }
+  .section-title h2 { font-size:2.3rem; margin-top:14px; font-weight:400; }
+  .section-title p { color:var(--text-dim); max-width:520px; margin-top:16px; font-size:1rem; }
+  .reveal { opacity:0; transform:translateY(50px); }
+
+  .about-top { display:flex; gap:32px; align-items:center; margin-bottom:60px; }
+  .about-photo {
+    width: 170px; height: 170px; border-radius: 14px; flex-shrink: 0; overflow: hidden;
+    box-shadow: 0 20px 40px rgba(251,69,4,0.15); background: linear-gradient(140deg, var(--accent), #3a1200);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .about-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .about-heading h2 { font-size: 2.5rem; line-height: 1.35; font-weight: 300; max-width: 620px; }
+  .about-stats { display:flex; align-items:center; padding-top: 40px; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 0; }
+  .stat { flex: 1; min-width: 140px; }
+  .stat h3 { font-family:'DM Serif Display', serif; font-size:2.6rem; color:var(--text); }
+  .stat p { color:var(--text-dim); font-size:.88rem; margin-top:6px; }
+  .stat-divider { width:1px; height:56px; background: var(--border); margin: 0 30px; }
+  .about-desc { color: var(--text-dim); max-width: 640px; margin-top: 30px; line-height: 1.7; }
+
+  .services-header { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap: 24px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .services-header h2 { font-size: 2.6rem; font-weight: 300; }
+  .services-header p { color: var(--text-dim); max-width: 380px; }
+  .service-row { display:flex; justify-content:space-between; align-items:center; padding: 34px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 16px; transition: padding-left .3s; }
+  .service-row:hover { padding-left: 12px; }
+  .service-row h3 { font-size: 1.6rem; font-weight: 400; }
+  .service-row p { color: var(--text-dim); font-size: .92rem; max-width: 380px; }
+  .service-num { color: var(--text-dimmer); font-size: .85rem; margin-right: 20px; }
+
+  .work-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:26px; }
+  .work-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:transform .3s, border-color .3s; }
+  .work-card:hover { transform:translateY(-6px); border-color:var(--accent); }
+  .work-thumb { height:170px; display:flex; align-items:center; justify-content:center; font-size:2.4rem; background:linear-gradient(135deg,#171717,#0a0a0a); }
+  .work-info { padding:24px; }
+  .work-info h3 { font-size:1.1rem; margin-bottom:8px; font-weight:500; }
+  .work-info p { color:var(--text-dim); font-size:.88rem; margin-bottom:16px; }
+  .work-link { color:var(--accent); font-size:.85rem; font-weight:600; }
+  .work-cta { text-align:center; margin-top:44px; }
+
+  .process-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:24px; }
+  .process-card { border:1px solid var(--border); border-radius:16px; padding:32px; background:var(--surface); }
+  .process-card .num { color:var(--accent); font-family:'DM Serif Display',serif; font-size:2rem; margin-bottom:12px; }
+  .process-card h4 { margin-bottom:8px; font-weight:500; }
+  .process-card p { color:var(--text-dim); font-size:.9rem; }
+
+  .engagement-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:24px; max-width:800px; margin:0 auto; }
+  .engagement-card { border:1px solid var(--border); border-radius:16px; padding:38px 30px; text-align:center; background:var(--surface); }
+  .engagement-card h3 { margin-bottom:10px; font-weight:400; font-size:1.4rem; }
+  .engagement-card p { color:var(--text-dim); font-size:.9rem; margin-bottom:22px; }
+  .engagement-features { text-align:left; margin-bottom:28px; }
+  .engagement-features li { color:var(--text-dim); padding:6px 0; font-size:.88rem; display:flex; gap:10px; align-items:center; }
+  .engagement-features li::before { content:'—'; color:var(--accent); }
+  .engagement-btn { display:block; width:100%; padding:13px; border-radius:30px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-weight:600; cursor:pointer; }
+
+  .contact-section { text-align:center; }
+  .contact-section h2 { font-size:2.6rem; margin-bottom:18px; font-weight:300; }
+  .contact-section p { color:var(--text-dim); max-width:480px; margin:0 auto 30px; }
+  .contact-email { font-family:'DM Serif Display', serif; font-style: italic; font-size:1.5rem; color:var(--accent); }
+  footer { border-top:1px solid var(--border); padding:44px 24px; text-align:center; }
+  footer .logo { color: var(--accent); margin-bottom:16px; }
+  footer .footer-links { display:flex; justify-content:center; gap:24px; margin:18px 0; flex-wrap:wrap; font-size: .9rem; }
+  footer .footer-links a:hover { color:var(--accent); }
+  footer .copyright { color:var(--text-dimmer); font-size:.8rem; margin-top:12px; }
+
+  @media (max-width:768px){
+    .nav-links { position:fixed; top:0; right:-100%; height:100vh; width:70%; background:var(--surface); flex-direction:column; justify-content:center; padding:20px; gap:26px; transition:right .4s ease; z-index:150; }
+    .nav-links.active { right:0; }
+    .menu-toggle { display:block; }
+    .about-top { flex-direction:column; align-items:flex-start; }
+    .about-heading h2 { font-size: 1.8rem; }
+    .about-stats { flex-direction:column; align-items:flex-start; gap: 24px; }
+    .stat-divider { display:none; }
+    .services-header { flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<div id="preloader">
+  <div class="pl-logo">Chin<span>MAYA</span></div>
+  <div class="pl-bar"><div class="pl-fill" id="plFill"></div></div>
+</div>
+
+<header id="header">
+  <nav>
+    <div class="logo">Chin<span>maya</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#contact" class="nav-cta magnetic">Let's Talk</a></li>
+    </ul>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner">
+    <div class="hero-text-side">
+      <span class="tag">Product & Hardware Designer</span>
+      <h1>
+        <div class="line"><span>Hi, I'm Chinmaya —</span></div>
+        <div class="line"><span>designing <span class="italic">reliable hardware</span></span></div>
+      </h1>
+      <p>I help teams design, engineer, and debug robust hardware and product systems — from early concept to production-ready solutions.</p>
+      <div class="btn-group">
+        <a href="#contact" class="btn-primary magnetic">Let's Talk</a>
+        <a href="#work" class="btn-secondary magnetic">View My Work</a>
+      </div>
+    </div>
+    <div class="hero-photo-side">
+      <div class="hero-photo-frame">
+        <!-- Replace src below with your actual photo filename -->
+        <img src="profile-photo.jpg" alt="Chinmaya" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'placeholder-icon\'>👤</span>'">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="about">
+  <div class="container">
+    <div class="tag reveal">About Me</div>
+    <div class="about-top reveal" style="margin-top:20px;">
+      <div class="about-photo">
+        <img src="profile-photo.jpg" alt="Chinmaya" onerror="this.style.display='none'; this.parentElement.innerHTML='🔧'">
+      </div>
+      <div class="about-heading">
+        <h2>I'm a Product Designer crafting <span class="italic">reliable hardware systems</span>.</h2>
+      </div>
+    </div>
+    <p class="about-desc reveal">I specialize in hardware and system-level design — bridging the gap between concept and functioning product. From schematics and system architecture to hands-on debugging, I care about building things that work reliably in the real world.</p>
+    <div class="about-stats reveal">
+      <div class="stat"><h3>5+</h3><p>Years of Experience</p></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><h3>30+</h3><p>Projects Delivered</p></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><h3>100+</h3><p>Systems Debugged</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="services">
+  <div class="container">
+    <div class="services-header reveal">
+      <div>
+        <span class="tag">Services</span>
+        <h2 style="margin-top:14px;">My <span class="italic">services</span></h2>
+      </div>
+      <p>Helping teams build reliable hardware systems that combine engineering rigor with practical, real-world performance.</p>
+    </div>
+    <div class="service-row reveal"><div><span class="service-num">01</span><h3 style="display:inline;">Hardware Design</h3><p>Schematic design, component selection, and full hardware architecture.</p></div></div>
+    <div class="service-row reveal"><div><span class="service-num">02</span><h3 style="display:inline;">System Design</h3><p>Designing how hardware, firmware, and software layers work together.</p></div></div>
+    <div class="service-row reveal"><div><span class="service-num">03</span><h3 style="display:inline;">Product Design</h3><p>Turning early concepts into well-thought-out, manufacturable products.</p></div></div>
+    <div class="service-row reveal"><div><span class="service-num">04</span><h3 style="display:inline;">Consultation</h3><p>Strategic guidance for technical decision-making and sourcing.</p></div></div>
+    <div class="service-row reveal"><div><span class="service-num">05</span><h3 style="display:inline;">Hardware Debugging</h3><p>Root-cause analysis and hands-on debugging for misbehaving systems.</p></div></div>
+  </div>
+</section>
+
+<section class="section" id="work">
+  <div class="container">
+    <div class="section-title reveal">
+      <span class="tag">Work</span>
+      <h2>Selected <span class="italic">projects</span></h2>
+      <p>A glimpse into the kind of hardware and system-level work I do. More on GitHub.</p>
+    </div>
+    <div class="work-grid">
+      <div class="work-card reveal"><div class="work-thumb">⚡</div><div class="work-info"><h3>Hardware System Build</h3><p>End-to-end hardware design and debugging for a custom embedded system.</p><a href="https://github.com/HWSWengineer" target="_blank" class="work-link magnetic">View on GitHub →</a></div></div>
+      <div class="work-card reveal"><div class="work-thumb">🧠</div><div class="work-info"><h3>System Architecture Project</h3><p>Designed the system-level architecture connecting hardware and firmware.</p><a href="https://github.com/HWSWengineer" target="_blank" class="work-link magnetic">View on GitHub →</a></div></div>
+      <div class="work-card reveal"><div class="work-thumb">🔬</div><div class="work-info"><h3>Debug & Diagnostics Toolkit</h3><p>Built internal tooling to speed up hardware debugging and root-cause analysis.</p><a href="https://github.com/HWSWengineer" target="_blank" class="work-link magnetic">View on GitHub →</a></div></div>
+    </div>
+    <div class="work-cta reveal"><a href="https://github.com/HWSWengineer" target="_blank" class="btn-secondary magnetic" style="display:inline-block;">See All Projects on GitHub</a></div>
+  </div>
+</section>
+
+<section class="section" id="process">
+  <div class="container">
+    <div class="section-title reveal">
+      <span class="tag">Process</span>
+      <h2>How I <span class="italic">work</span></h2>
+      <p>A proven workflow that takes hardware ideas from concept to reliable, tested systems.</p>
+    </div>
+    <div class="process-grid">
+      <div class="process-card reveal"><div class="num">01</div><h4>Research</h4><p>Understanding requirements and constraints before touching a single component.</p></div>
+      <div class="process-card reveal"><div class="num">02</div><h4>Design</h4><p>Architecting hardware and system design with reliability in mind.</p></div>
+      <div class="process-card reveal"><div class="num">03</div><h4>Prototype</h4><p>Building and iterating on functional prototypes to validate early.</p></div>
+      <div class="process-card reveal"><div class="num">04</div><h4>Debug & Test</h4><p>Rigorous testing to ensure the system performs reliably in real conditions.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="engagement">
+  <div class="container">
+    <div class="section-title reveal">
+      <span class="tag">Engagement</span>
+      <h2>Let's work <span class="italic">together</span></h2>
+      <p>Flexible engagement options depending on your project's scope and stage.</p>
+    </div>
+    <div class="engagement-grid">
+      <div class="engagement-card reveal">
+        <h3>Project-Based</h3>
+        <p>For defined hardware or product design projects with a clear scope.</p>
+        <ul class="engagement-features"><li>Hardware/system design</li><li>Prototyping support</li><li>Debugging & testing</li><li>Documentation</li></ul>
+        <button class="engagement-btn magnetic" onclick="window.location.href='mailto:mrchinmaya93@gmail.com'">Get a Custom Quote</button>
+      </div>
+      <div class="engagement-card reveal">
+        <h3>Consultation</h3>
+        <p>For teams needing strategic technical guidance on an ongoing basis.</p>
+        <ul class="engagement-features"><li>Technical strategy</li><li>Design reviews</li><li>Sourcing guidance</li><li>Ongoing support</li></ul>
+        <button class="engagement-btn magnetic" onclick="window.location.href='mailto:mrchinmaya93@gmail.com'">Book a Call</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section contact-section" id="contact" style="background:var(--surface);">
+  <div class="container">
+    <h2 class="reveal">Have a project in mind?</h2>
+    <p class="reveal">Whether it's hardware design, debugging, or a full product build — let's talk about it.</p>
+    <a href="mailto:mrchinmaya93@gmail.com" class="contact-email magnetic reveal">mrchinmaya93@gmail.com</a>
+  </div>
+</section>
+
+<footer>
+  <div class="logo">Chin<span>maya</span></div>
+  <ul class="footer-links">
+    <li><a href="#home">Home</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#work">Work</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="https://github.com/HWSWengineer" target="_blank">GitHub</a></li>
+  </ul>
+  <p class="copyright">© 2025 Chinmaya. Product & Hardware Design.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+window.addEventListener('load', () => {
+  gsap.to("#plFill", { width: "100%", duration: 1.1, ease: "power2.inOut" });
+  gsap.to(".pl-logo", { opacity: 1, duration: 0.6, delay: 0.2 });
+  gsap.to("#preloader", {
+    opacity: 0, duration: 0.6, delay: 1.3,
+    onComplete: () => { document.getElementById('preloader').style.display = 'none'; playHeroIntro(); }
+  });
+});
+
+if (!isTouchDevice) {
+  const dot = document.querySelector('.cursor-dot');
+  const ring = document.querySelector('.cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  window.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; dot.style.left=mx+'px'; dot.style.top=my+'px'; });
+  function animRing(){ rx+=(mx-rx)*0.15; ry+=(my-ry)*0.15; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); }
+  animRing();
+  document.querySelectorAll('a,button').forEach(el=>{
+    el.addEventListener('mouseenter',()=>ring.classList.add('hovered'));
+    el.addEventListener('mouseleave',()=>ring.classList.remove('hovered'));
+  });
+  document.querySelectorAll('.magnetic').forEach(el=>{
+    el.addEventListener('mousemove', e=>{
+      const r=el.getBoundingClientRect();
+      const x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2;
+      gsap.to(el,{x:x*0.25,y:y*0.25,duration:0.3});
+    });
+    el.addEventListener('mouseleave', ()=>gsap.to(el,{x:0,y:0,duration:0.4,ease:'elastic.out(1,0.4)'}));
+  });
+}
+
+const header = document.getElementById('header');
+window.addEventListener('scroll', ()=> header.classList.toggle('scrolled', window.scrollY>60));
+document.getElementById('menuToggle').addEventListener('click', ()=> document.getElementById('navLinks').classList.toggle('active'));
+document.querySelectorAll('.nav-links a').forEach(l=>l.addEventListener('click',()=>document.getElementById('navLinks').classList.remove('active')));
+
+function playHeroIntro(){
+  gsap.to(".hero-text-side .tag",{opacity:1,duration:0.6});
+  gsap.to(".hero-text-side h1 .line span",{y:"0%",duration:1,stagger:0.15,ease:"power4.out",delay:0.2});
+  gsap.to(".hero-text-side p",{opacity:1,duration:0.8,delay:0.8});
+  gsap.to(".hero-text-side .btn-group",{opacity:1,duration:0.8,delay:1});
+  gsap.to(".hero-photo-side",{opacity:1,scale:1,duration:1,ease:"power3.out",delay:0.5});
+}
+
+gsap.registerPlugin(ScrollTrigger);
+document.querySelectorAll('.reveal').forEach((el,i)=>{
+  gsap.to(el,{opacity:1,y:0,duration:0.9,ease:"power3.out",scrollTrigger:{trigger:el,start:"top 85%"},delay:(i%3)*0.08});
+});
+
+const heroSection = document.querySelector('.hero');
+const canvas = document.getElementById('hero-canvas');
+const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio > 1 ? 1.5 : 1;
+  canvas.width = heroSection.clientWidth * dpr;
+  canvas.height = heroSection.clientHeight * dpr;
+  if (gl) gl.viewport(0, 0, canvas.width, canvas.height);
+}
+
+if (gl) {
+  const vertexShaderSrc = `attribute vec2 a_position; void main(){ gl_Position = vec4(a_position, 0.0, 1.0); }`;
+  const fragmentShaderSrc = `
+    precision highp float;
+    uniform float u_time;
+    uniform vec2 u_resolution;
+    uniform vec2 u_mouse;
+    vec3 palette(float t) {
+      vec3 a = vec3(0.15, 0.08, 0.05);
+      vec3 b = vec3(0.85, 0.45, 0.25);
+      vec3 c = vec3(1.0, 1.0, 0.8);
+      vec3 d = vec3(0.0, 0.15, 0.3);
+      return a + b * cos(6.28318 * (c * t + d));
+    }
+    void main() {
+      vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+      vec2 mouseInfluence = (u_mouse - 0.5) * 0.6;
+      float t = u_time * 0.12;
+      vec2 p = uv;
+      for (float i = 1.0; i < 4.0; i++) {
+        p.x += 0.5 / i * sin(i * 2.5 * p.y + t + mouseInfluence.x) + mouseInfluence.x * 0.2;
+        p.y += 0.5 / i * cos(i * 2.5 * p.x + t + mouseInfluence.y) + mouseInfluence.y * 0.2;
+      }
+      float pattern = sin(p.x * 2.0 + t) * cos(p.y * 2.0 - t);
+      vec3 col = palette(pattern * 0.5 + 0.5 + length(uv) * 0.3);
+      col *= smoothstep(1.4, 0.0, length(uv));
+      col += 0.03 * palette(t);
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  function createShader(type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) { console.error(gl.getShaderInfoLog(shader)); gl.deleteShader(shader); return null; }
+    return shader;
+  }
+
+  const vertexShader = createShader(gl.VERTEX_SHADER, vertexShaderSrc);
+  const fragmentShader = createShader(gl.FRAGMENT_SHADER, fragmentShaderSrc);
+  const program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  gl.useProgram(program);
+
+  const positionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+
+  const positionLoc = gl.getAttribLocation(program, 'a_position');
+  gl.enableVertexAttribArray(positionLoc);
+  gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+
+  const timeLoc = gl.getUniformLocation(program, 'u_time');
+  const resolutionLoc = gl.getUniformLocation(program, 'u_resolution');
+  const mouseLoc = gl.getUniformLocation(program, 'u_mouse');
+
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  let mouseX = 0.5, mouseY = 0.5;
+  if (!isTouchDevice) {
+    heroSection.addEventListener('mousemove', e => {
+      const rect = heroSection.getBoundingClientRect();
+      mouseX = (e.clientX - rect.left) / rect.width;
+      mouseY = 1.0 - (e.clientY - rect.top) / rect.height;
+    });
+  }
+
+  let heroVisible = true;
+  new IntersectionObserver(([entry]) => { heroVisible = entry.isIntersecting; }, { threshold: 0.05 }).observe(heroSection);
+
+  const startTime = performance.now();
+  function renderShader() {
+    if (heroVisible && !document.hidden) {
+      const elapsed = (performance.now() - startTime) / 1000;
+      gl.uniform1f(timeLoc, elapsed);
+      gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
+      gl.uniform2f(mouseLoc, mouseX, mouseY);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+    requestAnimationFrame(renderShader);
+  }
+  renderShader();
+}
+</script>
+
+</body>
+</html>
